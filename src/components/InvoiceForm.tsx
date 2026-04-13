@@ -17,7 +17,7 @@ const schema = z.object({
   invoice_date: z.string(),
   items: z.array(z.object({
     item_date: z.string(),
-    quantity: z.coerce.number().min(0),
+    quantity: z.number().min(0),
   })),
 });
 
