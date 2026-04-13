@@ -1,19 +1,86 @@
+"use client";
+
 import InvoiceForm from '@/components/InvoiceForm';
-import { FileText, Settings, History, LayoutDashboard } from 'lucide-react';
+import { FileText, Settings, History, LayoutDashboard, Menu, X, Sun, Moon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 
 export default function Home() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-      {/* Sidebar / Navigation (Modern Aesthetics) */}
-      <div className="fixed left-0 top-0 h-full w-20 md:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col items-center md:items-start p-4 gap-8 z-50">
-        <div className="flex items-center gap-3 px-2">
+      
+      {/* Mobile Top Header (Hamburger + Theme Toggle) */}
+      <div className="md:hidden fixed top-0 left-0 w-full h-[72px] bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-50 flex items-center justify-between px-4">
+        <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/40">
             <FileText className="text-white w-6 h-6" />
           </div>
-          <span className="hidden md:block font-bold text-xl tracking-tight">Invoicer.app</span>
+          <span className="font-bold text-xl tracking-tight">Invoicer</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+              aria-label="Toggle Dark Mode"
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          )}
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+          >
+            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Sidebar Overlay for Mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar / Navigation (Modern Aesthetics) */}
+      <div className={`
+        fixed left-0 top-0 h-full w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col items-start p-4 z-50
+        transform transition-transform duration-300 ease-in-out md:translate-x-0
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="flex items-center justify-between w-full mb-8 px-2 md:mt-0 mt-[16px]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/40">
+              <FileText className="text-white w-6 h-6" />
+            </div>
+            <span className="font-bold text-xl tracking-tight">Invoicer.app</span>
+          </div>
+          
+          {/* Desktop Theme Toggle inside Sidebar */}
+          <div className="hidden md:block">
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+                title="Toggle Theme"
+              >
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+            )}
+          </div>
         </div>
 
-        <nav className="flex flex-col gap-2 w-full">
+        <nav className="flex flex-col gap-2 w-full flex-grow">
           <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" active />
           <NavItem icon={<History size={20} />} label="Riwayat" />
           <NavItem icon={<Settings size={20} />} label="Pengaturan" />
@@ -21,7 +88,7 @@ export default function Home() {
       </div>
 
       {/* Main Content Area */}
-      <div className="pl-20 md:pl-64 pt-8 pb-20 px-4 md:px-12 max-w-7xl mx-auto">
+      <div className="md:pl-64 pt-8 pb-20 px-4 md:px-12 max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="mb-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -69,7 +136,7 @@ function NavItem({ icon, label, active = false }: { icon: React.ReactNode, label
         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'}
     `}>
       {icon}
-      <span className="hidden md:block font-semibold">{label}</span>
+      <span className="font-semibold">{label}</span>
     </div>
   );
 }
