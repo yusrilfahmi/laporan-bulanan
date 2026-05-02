@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus, Trash2, Download, Eye, FileText, Loader2, X, Users } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { STATIC_CUSTOMERS } from '@/lib/data';
 import { Customer } from '@/types';
 import { format } from 'date-fns';
 import { generatePDF, previewPDF } from '@/utils/pdfGenerator';
@@ -24,12 +24,11 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function InvoiceForm() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [customers, setCustomers] = useState<Customer[]>(STATIC_CUSTOMERS);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-
   const { register, control, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -49,18 +48,6 @@ export default function InvoiceForm() {
   const formData = watch();
   const reportType = formData.report_type;
   const items = formData.items || [];
-
-  // Fetch customers
-  async function fetchCustomers() {
-    setIsLoading(true);
-    const { data, error } = await supabase.from('customers').select('*').order('name');
-    if (data) setCustomers(data);
-    setIsLoading(false);
-  }
-
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
 
   // REAL-TIME CALCULATIONS (Derived state - no useEffect needed)
   const defaultPrice = reportType === 'invoice' ? 350000 : 30;
@@ -351,7 +338,6 @@ export default function InvoiceForm() {
       {isCustomerModalOpen && (
         <CustomerManagerModal 
           customers={customers} 
-          refresh={fetchCustomers} 
           onClose={() => setIsCustomerModalOpen(false)} 
         />
       )}
